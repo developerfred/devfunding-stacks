@@ -6,8 +6,14 @@
   "private": true,
   "scripts": {
     "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
     "test:report": "vitest run -- --coverage --costs",
-    "test:watch": "chokidar \"tests/**/*.ts\" \"contracts/**/*.clar\" -c \"npm run test:report\""
+    "test:core": "vitest run tests/contracts/core.test.ts",
+    "test:token": "vitest run tests/contracts/token.test.ts",
+    "test:escrow": "vitest run tests/contracts/escrow.test.ts",
+    "test:all": "vitest run tests/contracts/*.test.ts"
   },
   "author": "",
   "license": "ISC",
