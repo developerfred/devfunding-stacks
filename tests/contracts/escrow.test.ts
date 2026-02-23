@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { initSimnet } from '@stacks/clarinet-sdk';
 import { Cl } from '@stacks/transactions';
+import fs from 'fs';
 
 describe('DevFunding Escrow Contract', () => {
   let simnet: any;
@@ -9,8 +10,8 @@ describe('DevFunding Escrow Contract', () => {
   beforeEach(async () => {
     simnet = await initSimnet();
     accounts = simnet.getAccounts();
-    
-    simnet.deployContract('devfunding-escrow', './contracts/escrow.clar');
+    const escrowContent = fs.readFileSync('./contracts/escrow.clar', 'utf8');
+    simnet.deployContract('devfunding-escrow', escrowContent, null, accounts.get('deployer')!);
   });
 
   describe('Escrow Creation', () => {
@@ -30,7 +31,7 @@ describe('DevFunding Escrow Contract', () => {
           Cl.principal(beneficiary),
           Cl.uint(123), // grant ID
           Cl.bool(true), // is-grant
-          amount
+          amount,
         ],
         depositor
       );
@@ -47,16 +48,16 @@ describe('DevFunding Escrow Contract', () => {
 
       expect(escrow.result).toBeSome(
         Cl.tuple({
-          'depositor': Cl.principal(depositor),
-          'beneficiary': Cl.principal(beneficiary),
-          'amount': amount,
+          depositor: Cl.principal(depositor),
+          beneficiary: Cl.principal(beneficiary),
+          amount: amount,
           'context-id': Cl.uint(123),
           'is-grant': Cl.bool(true),
           'is-released': Cl.bool(false),
           'is-disputed': Cl.bool(false),
           'is-refunded': Cl.bool(false),
           'created-at': expect.any(Object),
-          'release-after': expect.any(Object)
+          'release-after': expect.any(Object),
         })
       );
     });
@@ -69,7 +70,7 @@ describe('DevFunding Escrow Contract', () => {
           Cl.principal(beneficiary),
           Cl.uint(456), // bounty ID
           Cl.bool(false), // is-grant = false (bounty)
-          amount
+          amount,
         ],
         depositor
       );
@@ -86,16 +87,16 @@ describe('DevFunding Escrow Contract', () => {
 
       expect(escrowByContext.result).toBeSome(
         Cl.tuple({
-          'depositor': Cl.principal(depositor),
-          'beneficiary': Cl.principal(beneficiary),
-          'amount': amount,
+          depositor: Cl.principal(depositor),
+          beneficiary: Cl.principal(beneficiary),
+          amount: amount,
           'context-id': Cl.uint(456),
           'is-grant': Cl.bool(false),
           'is-released': Cl.bool(false),
           'is-disputed': Cl.bool(false),
           'is-refunded': Cl.bool(false),
           'created-at': expect.any(Object),
-          'release-after': expect.any(Object)
+          'release-after': expect.any(Object),
         })
       );
     });
@@ -108,7 +109,7 @@ describe('DevFunding Escrow Contract', () => {
           Cl.principal(depositor), // Same as depositor
           Cl.uint(123),
           Cl.bool(true),
-          amount
+          amount,
         ],
         depositor
       );
@@ -121,12 +122,7 @@ describe('DevFunding Escrow Contract', () => {
       simnet.callPublicFn(
         'devfunding-escrow',
         'create-escrow',
-        [
-          Cl.principal(beneficiary),
-          Cl.uint(123),
-          Cl.bool(true),
-          amount
-        ],
+        [Cl.principal(beneficiary), Cl.uint(123), Cl.bool(true), amount],
         depositor
       );
 
@@ -134,12 +130,7 @@ describe('DevFunding Escrow Contract', () => {
       const result = simnet.callPublicFn(
         'devfunding-escrow',
         'create-escrow',
-        [
-          Cl.principal(beneficiary),
-          Cl.uint(123),
-          Cl.bool(true),
-          amount
-        ],
+        [Cl.principal(beneficiary), Cl.uint(123), Cl.bool(true), amount],
         depositor
       );
 
@@ -150,12 +141,7 @@ describe('DevFunding Escrow Contract', () => {
       const result = simnet.callPublicFn(
         'devfunding-escrow',
         'create-escrow',
-        [
-          Cl.principal(beneficiary),
-          Cl.uint(123),
-          Cl.bool(true),
-          Cl.uint(0)
-        ],
+        [Cl.principal(beneficiary), Cl.uint(123), Cl.bool(true), Cl.uint(0)],
         depositor
       );
 
@@ -171,17 +157,12 @@ describe('DevFunding Escrow Contract', () => {
 
     beforeEach(() => {
       simnet.mintStx(20000000, depositor);
-      
+
       // Create escrow
       const result = simnet.callPublicFn(
         'devfunding-escrow',
         'create-escrow',
-        [
-          Cl.principal(beneficiary),
-          Cl.uint(123),
-          Cl.bool(true),
-          amount
-        ],
+        [Cl.principal(beneficiary), Cl.uint(123), Cl.bool(true), amount],
         depositor
       );
 
@@ -190,7 +171,7 @@ describe('DevFunding Escrow Contract', () => {
 
     it('should allow depositor to release escrow to beneficiary', () => {
       const initialBeneficiaryBalance = simnet.stxBalance(beneficiary);
-      
+
       const result = simnet.callPublicFn(
         'devfunding-escrow',
         'release-escrow',
@@ -229,12 +210,7 @@ describe('DevFunding Escrow Contract', () => {
 
     it('should reject release of already released escrow', () => {
       // Release once
-      simnet.callPublicFn(
-        'devfunding-escrow',
-        'release-escrow',
-        [Cl.uint(escrowId)],
-        depositor
-      );
+      simnet.callPublicFn('devfunding-escrow', 'release-escrow', [Cl.uint(escrowId)], depositor);
 
       // Try to release again
       const result = simnet.callPublicFn(
@@ -249,12 +225,7 @@ describe('DevFunding Escrow Contract', () => {
 
     it('should reject release of disputed escrow', () => {
       // Start dispute
-      simnet.callPublicFn(
-        'devfunding-escrow',
-        'dispute-escrow',
-        [Cl.uint(escrowId)],
-        depositor
-      );
+      simnet.callPublicFn('devfunding-escrow', 'dispute-escrow', [Cl.uint(escrowId)], depositor);
 
       // Try to release
       const result = simnet.callPublicFn(
@@ -270,14 +241,9 @@ describe('DevFunding Escrow Contract', () => {
     it('should reject release of refunded escrow', () => {
       // Advance time past lock period
       simnet.mineEmptyBlocks(10000); // Enough blocks to pass 7 days
-      
+
       // Refund escrow
-      simnet.callPublicFn(
-        'devfunding-escrow',
-        'refund-escrow',
-        [Cl.uint(escrowId)],
-        depositor
-      );
+      simnet.callPublicFn('devfunding-escrow', 'refund-escrow', [Cl.uint(escrowId)], depositor);
 
       // Try to release
       const result = simnet.callPublicFn(
@@ -299,16 +265,11 @@ describe('DevFunding Escrow Contract', () => {
 
     beforeEach(() => {
       simnet.mintStx(20000000, depositor);
-      
+
       const result = simnet.callPublicFn(
         'devfunding-escrow',
         'create-escrow',
-        [
-          Cl.principal(beneficiary),
-          Cl.uint(123),
-          Cl.bool(true),
-          amount
-        ],
+        [Cl.principal(beneficiary), Cl.uint(123), Cl.bool(true), amount],
         depositor
       );
 
@@ -318,9 +279,9 @@ describe('DevFunding Escrow Contract', () => {
     it('should allow depositor to refund after lock period', () => {
       // Advance time past lock period (7 days)
       simnet.mineEmptyBlocks(10000);
-      
+
       const initialDepositorBalance = simnet.stxBalance(depositor);
-      
+
       const result = simnet.callPublicFn(
         'devfunding-escrow',
         'refund-escrow',
@@ -359,7 +320,7 @@ describe('DevFunding Escrow Contract', () => {
 
     it('should reject refund by non-depositor', () => {
       simnet.mineEmptyBlocks(10000);
-      
+
       const result = simnet.callPublicFn(
         'devfunding-escrow',
         'refund-escrow',
@@ -372,15 +333,10 @@ describe('DevFunding Escrow Contract', () => {
 
     it('should reject refund of released escrow', () => {
       // Release escrow
-      simnet.callPublicFn(
-        'devfunding-escrow',
-        'release-escrow',
-        [Cl.uint(escrowId)],
-        depositor
-      );
+      simnet.callPublicFn('devfunding-escrow', 'release-escrow', [Cl.uint(escrowId)], depositor);
 
       simnet.mineEmptyBlocks(10000);
-      
+
       const result = simnet.callPublicFn(
         'devfunding-escrow',
         'refund-escrow',
@@ -393,14 +349,9 @@ describe('DevFunding Escrow Contract', () => {
 
     it('should reject refund of disputed escrow', () => {
       simnet.mineEmptyBlocks(10000);
-      
+
       // Start dispute
-      simnet.callPublicFn(
-        'devfunding-escrow',
-        'dispute-escrow',
-        [Cl.uint(escrowId)],
-        depositor
-      );
+      simnet.callPublicFn('devfunding-escrow', 'dispute-escrow', [Cl.uint(escrowId)], depositor);
 
       const result = simnet.callPublicFn(
         'devfunding-escrow',
@@ -421,16 +372,11 @@ describe('DevFunding Escrow Contract', () => {
 
     beforeEach(() => {
       simnet.mintStx(20000000, depositor);
-      
+
       const result = simnet.callPublicFn(
         'devfunding-escrow',
         'create-escrow',
-        [
-          Cl.principal(beneficiary),
-          Cl.uint(123),
-          Cl.bool(true),
-          amount
-        ],
+        [Cl.principal(beneficiary), Cl.uint(123), Cl.bool(true), amount],
         depositor
       );
 
@@ -483,12 +429,7 @@ describe('DevFunding Escrow Contract', () => {
 
     it('should reject dispute of released escrow', () => {
       // Release escrow
-      simnet.callPublicFn(
-        'devfunding-escrow',
-        'release-escrow',
-        [Cl.uint(escrowId)],
-        depositor
-      );
+      simnet.callPublicFn('devfunding-escrow', 'release-escrow', [Cl.uint(escrowId)], depositor);
 
       const result = simnet.callPublicFn(
         'devfunding-escrow',
@@ -503,12 +444,7 @@ describe('DevFunding Escrow Contract', () => {
     it('should reject dispute of refunded escrow', () => {
       // Advance time and refund
       simnet.mineEmptyBlocks(10000);
-      simnet.callPublicFn(
-        'devfunding-escrow',
-        'refund-escrow',
-        [Cl.uint(escrowId)],
-        depositor
-      );
+      simnet.callPublicFn('devfunding-escrow', 'refund-escrow', [Cl.uint(escrowId)], depositor);
 
       const result = simnet.callPublicFn(
         'devfunding-escrow',
@@ -522,12 +458,7 @@ describe('DevFunding Escrow Contract', () => {
 
     it('should reject duplicate dispute', () => {
       // Start dispute
-      simnet.callPublicFn(
-        'devfunding-escrow',
-        'dispute-escrow',
-        [Cl.uint(escrowId)],
-        depositor
-      );
+      simnet.callPublicFn('devfunding-escrow', 'dispute-escrow', [Cl.uint(escrowId)], depositor);
 
       // Try to dispute again
       const result = simnet.callPublicFn(
@@ -550,33 +481,23 @@ describe('DevFunding Escrow Contract', () => {
 
     beforeEach(() => {
       simnet.mintStx(20000000, depositor);
-      
+
       const result = simnet.callPublicFn(
         'devfunding-escrow',
         'create-escrow',
-        [
-          Cl.principal(beneficiary),
-          Cl.uint(123),
-          Cl.bool(true),
-          amount
-        ],
+        [Cl.principal(beneficiary), Cl.uint(123), Cl.bool(true), amount],
         depositor
       );
 
       escrowId = Cl.tupleGet(result.result!, 'value');
-      
+
       // Start dispute
-      simnet.callPublicFn(
-        'devfunding-escrow',
-        'dispute-escrow',
-        [Cl.uint(escrowId)],
-        depositor
-      );
+      simnet.callPublicFn('devfunding-escrow', 'dispute-escrow', [Cl.uint(escrowId)], depositor);
     });
 
     it('should allow contract owner to resolve dispute in favor of beneficiary', () => {
       const initialBeneficiaryBalance = simnet.stxBalance(beneficiary);
-      
+
       const result = simnet.callPublicFn(
         'devfunding-escrow',
         'resolve-escrow-dispute',
@@ -609,7 +530,7 @@ describe('DevFunding Escrow Contract', () => {
 
     it('should allow contract owner to resolve dispute in favor of depositor', () => {
       const initialDepositorBalance = simnet.stxBalance(depositor);
-      
+
       const result = simnet.callPublicFn(
         'devfunding-escrow',
         'resolve-escrow-dispute',
@@ -657,12 +578,7 @@ describe('DevFunding Escrow Contract', () => {
       const newResult = simnet.callPublicFn(
         'devfunding-escrow',
         'create-escrow',
-        [
-          Cl.principal(beneficiary),
-          Cl.uint(456),
-          Cl.bool(true),
-          amount
-        ],
+        [Cl.principal(beneficiary), Cl.uint(456), Cl.bool(true), amount],
         depositor
       );
 
@@ -701,12 +617,7 @@ describe('DevFunding Escrow Contract', () => {
     it('should reject resolution of already refunded escrow', () => {
       // Advance time and refund (bypassing dispute)
       simnet.mineEmptyBlocks(10000);
-      simnet.callPublicFn(
-        'devfunding-escrow',
-        'refund-escrow',
-        [Cl.uint(escrowId)],
-        depositor
-      );
+      simnet.callPublicFn('devfunding-escrow', 'refund-escrow', [Cl.uint(escrowId)], depositor);
 
       const result = simnet.callPublicFn(
         'devfunding-escrow',
@@ -725,7 +636,7 @@ describe('DevFunding Escrow Contract', () => {
 
     it('should allow owner to set lock period', () => {
       const newPeriod = Cl.uint(86400); // 1 day
-      
+
       const result = simnet.callPublicFn(
         'devfunding-escrow',
         'set-lock-period',
@@ -777,16 +688,11 @@ describe('DevFunding Escrow Contract', () => {
 
     beforeEach(() => {
       simnet.mintStx(20000000, depositor);
-      
+
       const result = simnet.callPublicFn(
         'devfunding-escrow',
         'create-escrow',
-        [
-          Cl.principal(beneficiary),
-          Cl.uint(123),
-          Cl.bool(true),
-          amount
-        ],
+        [Cl.principal(beneficiary), Cl.uint(123), Cl.bool(true), amount],
         depositor
       );
 
@@ -794,12 +700,7 @@ describe('DevFunding Escrow Contract', () => {
     });
 
     it('should correctly report escrow count', () => {
-      const result = simnet.callReadOnlyFn(
-        'devfunding-escrow',
-        'get-escrow-count',
-        [],
-        depositor
-      );
+      const result = simnet.callReadOnlyFn('devfunding-escrow', 'get-escrow-count', [], depositor);
 
       expect(result.result).toBeOk(Cl.uint(1));
     });
@@ -817,12 +718,7 @@ describe('DevFunding Escrow Contract', () => {
 
     it('should report inactive escrow after release', () => {
       // Release escrow
-      simnet.callPublicFn(
-        'devfunding-escrow',
-        'release-escrow',
-        [Cl.uint(escrowId)],
-        depositor
-      );
+      simnet.callPublicFn('devfunding-escrow', 'release-escrow', [Cl.uint(escrowId)], depositor);
 
       const result = simnet.callReadOnlyFn(
         'devfunding-escrow',
@@ -847,7 +743,7 @@ describe('DevFunding Escrow Contract', () => {
 
       // After lock period should be refundable
       simnet.mineEmptyBlocks(10000);
-      
+
       const finalResult = simnet.callReadOnlyFn(
         'devfunding-escrow',
         'can-refund?',
@@ -860,14 +756,9 @@ describe('DevFunding Escrow Contract', () => {
 
     it('should not be refundable if disputed', () => {
       simnet.mineEmptyBlocks(10000);
-      
+
       // Start dispute
-      simnet.callPublicFn(
-        'devfunding-escrow',
-        'dispute-escrow',
-        [Cl.uint(escrowId)],
-        depositor
-      );
+      simnet.callPublicFn('devfunding-escrow', 'dispute-escrow', [Cl.uint(escrowId)], depositor);
 
       const result = simnet.callReadOnlyFn(
         'devfunding-escrow',
@@ -881,14 +772,9 @@ describe('DevFunding Escrow Contract', () => {
 
     it('should not be refundable if already refunded', () => {
       simnet.mineEmptyBlocks(10000);
-      
+
       // Refund
-      simnet.callPublicFn(
-        'devfunding-escrow',
-        'refund-escrow',
-        [Cl.uint(escrowId)],
-        depositor
-      );
+      simnet.callPublicFn('devfunding-escrow', 'refund-escrow', [Cl.uint(escrowId)], depositor);
 
       const result = simnet.callReadOnlyFn(
         'devfunding-escrow',

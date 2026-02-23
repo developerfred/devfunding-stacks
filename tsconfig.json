@@ -1,25 +1,25 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "useDefineForClassFields": true,
+    "target": "ES2022",
     "module": "ESNext",
-    "lib": ["ESNext"],
-    "skipLibCheck": true,
-
+    "lib": ["ES2022"],
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-
+    "allowJs": true,
+    "checkJs": false,
     "strict": true,
     "noImplicitAny": true,
+    "strictNullChecks": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noImplicitReturns": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "types": ["node", "vitest/globals"]
   },
-  "include": [
-    "node_modules/@stacks/clarinet-sdk/vitest-helpers/src",
-    "tests"
-  ]
+  "include": ["tests/**/*.ts", "vitest.config.ts"],
+  "exclude": ["node_modules", "dist", "coverage", ".cache"]
 }

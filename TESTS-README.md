@@ -5,16 +5,19 @@ This directory contains comprehensive test suites for the DevFunding smart contr
 ## Test Structure
 
 ### Contract Tests
+
 - **`tests/contracts/core.test.ts`** - Tests for the main DevFunding Core contract
-- **`tests/contracts/token.test.ts`** - Tests for the DevFunding Token (SIP-010) contract  
+- **`tests/contracts/token.test.ts`** - Tests for the DevFunding Token (SIP-010) contract
 - **`tests/contracts/escrow.test.ts`** - Tests for the Escrow contract
 
 ### Test Utilities
+
 - **`tests/test-helpers.ts`** - Shared test utilities and helper functions
 
 ## Running Tests
 
 ### Available Scripts
+
 ```bash
 # Run all tests
 npm test
@@ -33,17 +36,19 @@ npm run test:report
 
 # Run specific contract tests
 npm run test:core      # Core contract only
-npm run test:token     # Token contract only  
+npm run test:token     # Token contract only
 npm run test:escrow    # Escrow contract only
 npm run test:all       # All contract tests
 ```
 
 ### Test Environment
+
 Tests use the Clarinet SDK with Simnet environment to simulate Stacks blockchain behavior without requiring actual network connections.
 
 ## Test Coverage
 
 ### Core Contract Tests
+
 - Developer profile creation and management
 - Grant lifecycle (creation, application, selection, claiming)
 - Premium feature subscriptions
@@ -53,6 +58,7 @@ Tests use the Clarinet SDK with Simnet environment to simulate Stacks blockchain
 - Error conditions and edge cases
 
 ### Token Contract Tests
+
 - SIP-010 compliance verification
 - Token transfers with and without memos
 - Minting and burning operations
@@ -61,6 +67,7 @@ Tests use the Clarinet SDK with Simnet environment to simulate Stacks blockchain
 - Error handling
 
 ### Escrow Contract Tests
+
 - Escrow creation for grants and bounties
 - Fund release to beneficiaries
 - Refunds after lock periods
@@ -71,6 +78,7 @@ Tests use the Clarinet SDK with Simnet environment to simulate Stacks blockchain
 ## Writing New Tests
 
 ### Using Test Helpers
+
 Import helper functions from `test-helpers.ts`:
 
 ```typescript
@@ -79,28 +87,29 @@ import { WALLETS, TEST_AMOUNTS, createDevProfile, createGrant } from '../test-he
 describe('My Test Suite', () => {
   it('should use helper functions', () => {
     const simnet = setupTestEnvironment();
-    
+
     // Create a developer profile
     createDevProfile(simnet, WALLETS.WALLET_1, 'githubuser', 'https://example.com');
-    
+
     // Create a grant
     const result = createGrant(
-      simnet, 
+      simnet,
       WALLETS.WALLET_1,
       TEST_AMOUNTS.TEN_STX,
       'Test grant',
       'Requirements',
       TEST_DURATIONS.THIRTY_DAYS
     );
-    
+
     expectOk(result, Cl.uint(0));
   });
 });
 ```
 
 ### Best Practices
+
 1. **Use standardized wallet addresses** from `WALLETS` constant
-2. **Use standardized test amounts** from `TEST_AMOUNTS` constant  
+2. **Use standardized test amounts** from `TEST_AMOUNTS` constant
 3. **Follow Arrange-Act-Assert pattern** for test structure
 4. **Test both success and failure cases**
 5. **Include edge cases** (zero values, maximum limits, etc.)
@@ -109,6 +118,7 @@ describe('My Test Suite', () => {
 ## Test Output
 
 Tests generate detailed output including:
+
 - Pass/fail status for each test
 - Error messages with contract error codes
 - Coverage reports (when enabled)
@@ -117,6 +127,7 @@ Tests generate detailed output including:
 ## Continuous Integration
 
 The test suite is designed to run in CI environments:
+
 - No external dependencies required
 - Deterministic test execution
 - Fast execution time

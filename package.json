@@ -13,16 +13,28 @@
     "test:core": "vitest run tests/contracts/core.test.ts",
     "test:token": "vitest run tests/contracts/token.test.ts",
     "test:escrow": "vitest run tests/contracts/escrow.test.ts",
-    "test:all": "vitest run tests/contracts/*.test.ts"
+    "test:all": "vitest run tests/contracts/*.test.ts",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "pre-commit": "npm run lint && npm run format:check"
   },
   "author": "",
   "license": "ISC",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0"
+  },
   "dependencies": {
-    "@stacks/clarinet-sdk": "^3.9.0",
+    "@stacks/clarinet-sdk": "^3.14.0",
     "@stacks/transactions": "^7.2.0",
     "@types/node": "^24.4.0",
     "chokidar-cli": "^3.0.0",
-    "vitest": "^4.0.7",
-    "vitest-environment-clarinet": "^3.0.0"
+    "vitest": "^3.0.0",
+    "vitest-environment-clarinet": "^3.0.2"
   }
 }

@@ -10,7 +10,7 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -40,7 +40,7 @@ jobs:
   lint:
     name: Lint Code
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -50,6 +50,11 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Check Prettier formatting
+        run: npm run format:check
       - name: Install dependencies
         run: npm ci
 
@@ -59,7 +64,7 @@ jobs:
   clarity:
     name: Validate Clarity Contracts
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -67,7 +72,7 @@ jobs:
       - name: Setup Clarinet
         uses: ./.github/actions/setup-clarinet
         with:
-          version: '1.7.1'
+          version: '3.14.0'
 
       - name: Run Clarinet check
         run: npx clarinet check
@@ -78,7 +83,7 @@ jobs:
   audit:
     name: Security Audit
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

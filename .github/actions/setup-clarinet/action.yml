@@ -5,7 +5,7 @@ inputs:
   version:
     description: 'Clarinet version'
     required: false
-    default: '1.7.1'
+    default: '3.14.0'
 
 runs:
   using: composite
@@ -14,7 +14,7 @@ runs:
       shell: bash
       run: |
         CLARINET_VERSION="${{ inputs.version }}"
-        
+
         # Detect OS
         case "$(uname -s)" in
             Linux*)
@@ -28,7 +28,7 @@ runs:
                 exit 1
                 ;;
         esac
-        
+
         # Detect architecture
         case "$(uname -m)" in
             x86_64|amd64)
@@ -42,13 +42,13 @@ runs:
                 exit 1
                 ;;
         esac
-        
+
         # Download and install Clarinet
         curl --proto '=https' --tlsv1.2 -sSfL "https://github.com/hirosystems/clarinet/releases/download/v${CLARINET_VERSION}/clarinet-${CLARINET_VERSION}-${OS}-${ARCH}.tar.gz" | tar -xz
-        
+
         # Move to local bin
         mv clarinet /usr/local/bin/
-        
+
         # Verify installation
         clarinet --version
 
