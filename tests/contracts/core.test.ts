@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { initSimnet } from '@stacks/clarinet-sdk';
 import { Cl } from '@stacks/transactions';
+import fs from 'fs';
 
 describe('DevFunding Core Contract', () => {
   let simnet: any;
@@ -10,11 +11,14 @@ describe('DevFunding Core Contract', () => {
     // Initialize simnet with contracts
     simnet = await initSimnet();
     accounts = simnet.getAccounts();
-    
-    // Deploy all contracts
-    simnet.deployContract('devfunding-core', './contracts/core.clar');
-    simnet.deployContract('devfunding-token', './contracts/token.clar');
-    simnet.deployContract('devfunding-escrow', './contracts/escrow.clar');
+    // Deploy all contracts - read contract content as strings
+    const coreContent = fs.readFileSync('./contracts/core.clar', 'utf8');
+    const tokenContent = fs.readFileSync('./contracts/token.clar', 'utf8');
+    const escrowContent = fs.readFileSync('./contracts/escrow.clar', 'utf8');
+
+    simnet.deployContract('devfunding-core', coreContent, null, accounts.get('deployer')!);
+    simnet.deployContract('devfunding-token', tokenContent, null, accounts.get('deployer')!);
+    simnet.deployContract('devfunding-escrow', escrowContent, null, accounts.get('deployer')!);
   });
 
   describe('Developer Profiles', () => {
@@ -26,15 +30,12 @@ describe('DevFunding Core Contract', () => {
       const result = simnet.callPublicFn(
         'devfunding-core',
         'create-dev-profile',
-        [
-          Cl.stringUtf8('githubuser'),
-          Cl.stringUtf8('https://portfolio.example.com')
-        ],
+        [Cl.stringUtf8('githubuser'), Cl.stringUtf8('https://portfolio.example.com')],
         developer1
       );
 
       expect(result.result).toBeOk(Cl.bool(true));
-      
+
       // Verify profile was created
       const profile = simnet.callReadOnlyFn(
         'devfunding-core',
@@ -47,14 +48,14 @@ describe('DevFunding Core Contract', () => {
         Cl.tuple({
           'github-handle': Cl.stringUtf8('githubuser'),
           'portfolio-url': Cl.stringUtf8('https://portfolio.example.com'),
-          'reputation': Cl.uint(0),
+          reputation: Cl.uint(0),
           'completed-grants': Cl.uint(0),
           'is-verified': Cl.bool(false),
           'referral-count': Cl.uint(0),
           'referral-earnings': Cl.uint(0),
           'referred-by': Cl.none(),
           'grants-created': Cl.uint(0),
-          'grants-claimed': Cl.uint(0)
+          'grants-claimed': Cl.uint(0),
         })
       );
     });
@@ -64,10 +65,7 @@ describe('DevFunding Core Contract', () => {
       simnet.callPublicFn(
         'devfunding-core',
         'create-dev-profile',
-        [
-          Cl.stringUtf8('githubuser'),
-          Cl.stringUtf8('https://portfolio.example.com')
-        ],
+        [Cl.stringUtf8('githubuser'), Cl.stringUtf8('https://portfolio.example.com')],
         developer1
       );
 
@@ -75,10 +73,7 @@ describe('DevFunding Core Contract', () => {
       const result = simnet.callPublicFn(
         'devfunding-core',
         'create-dev-profile',
-        [
-          Cl.stringUtf8('anotheruser'),
-          Cl.stringUtf8('https://another.example.com')
-        ],
+        [Cl.stringUtf8('anotheruser'), Cl.stringUtf8('https://another.example.com')],
         developer1
       );
 
@@ -90,10 +85,7 @@ describe('DevFunding Core Contract', () => {
       simnet.callPublicFn(
         'devfunding-core',
         'create-dev-profile',
-        [
-          Cl.stringUtf8('githubuser'),
-          Cl.stringUtf8('https://portfolio.example.com')
-        ],
+        [Cl.stringUtf8('githubuser'), Cl.stringUtf8('https://portfolio.example.com')],
         developer1
       );
 
@@ -101,10 +93,7 @@ describe('DevFunding Core Contract', () => {
       const result = simnet.callPublicFn(
         'devfunding-core',
         'update-dev-profile',
-        [
-          Cl.stringUtf8('updateduser'),
-          Cl.stringUtf8('https://updated.example.com')
-        ],
+        [Cl.stringUtf8('updateduser'), Cl.stringUtf8('https://updated.example.com')],
         developer1
       );
 
@@ -122,14 +111,14 @@ describe('DevFunding Core Contract', () => {
         Cl.tuple({
           'github-handle': Cl.stringUtf8('updateduser'),
           'portfolio-url': Cl.stringUtf8('https://updated.example.com'),
-          'reputation': Cl.uint(0),
+          reputation: Cl.uint(0),
           'completed-grants': Cl.uint(0),
           'is-verified': Cl.bool(false),
           'referral-count': Cl.uint(0),
           'referral-earnings': Cl.uint(0),
           'referred-by': Cl.none(),
           'grants-created': Cl.uint(0),
-          'grants-claimed': Cl.uint(0)
+          'grants-claimed': Cl.uint(0),
         })
       );
     });
@@ -139,10 +128,7 @@ describe('DevFunding Core Contract', () => {
       simnet.callPublicFn(
         'devfunding-core',
         'create-dev-profile',
-        [
-          Cl.stringUtf8('githubuser'),
-          Cl.stringUtf8('https://portfolio.example.com')
-        ],
+        [Cl.stringUtf8('githubuser'), Cl.stringUtf8('https://portfolio.example.com')],
         developer1
       );
 
@@ -184,9 +170,7 @@ describe('DevFunding Core Contract', () => {
         developer1
       );
 
-      expect(skill1.result).toBeSome(
-        Cl.tuple({ 'skill': Cl.stringUtf8('Clarity') })
-      );
+      expect(skill1.result).toBeSome(Cl.tuple({ skill: Cl.stringUtf8('Clarity') }));
     });
 
     it('should register referral between developers', () => {
@@ -194,20 +178,14 @@ describe('DevFunding Core Contract', () => {
       simnet.callPublicFn(
         'devfunding-core',
         'create-dev-profile',
-        [
-          Cl.stringUtf8('referrer'),
-          Cl.stringUtf8('https://referrer.example.com')
-        ],
+        [Cl.stringUtf8('referrer'), Cl.stringUtf8('https://referrer.example.com')],
         developer1
       );
 
       simnet.callPublicFn(
         'devfunding-core',
         'create-dev-profile',
-        [
-          Cl.stringUtf8('referee'),
-          Cl.stringUtf8('https://referee.example.com')
-        ],
+        [Cl.stringUtf8('referee'), Cl.stringUtf8('https://referee.example.com')],
         developer2
       );
 
@@ -257,30 +235,21 @@ describe('DevFunding Core Contract', () => {
       simnet.callPublicFn(
         'devfunding-core',
         'create-dev-profile',
-        [
-          Cl.stringUtf8('creator'),
-          Cl.stringUtf8('https://creator.example.com')
-        ],
+        [Cl.stringUtf8('creator'), Cl.stringUtf8('https://creator.example.com')],
         creator
       );
 
       simnet.callPublicFn(
         'devfunding-core',
         'create-dev-profile',
-        [
-          Cl.stringUtf8('applicant'),
-          Cl.stringUtf8('https://applicant.example.com')
-        ],
+        [Cl.stringUtf8('applicant'), Cl.stringUtf8('https://applicant.example.com')],
         applicant
       );
 
       simnet.callPublicFn(
         'devfunding-core',
         'create-dev-profile',
-        [
-          Cl.stringUtf8('referrer'),
-          Cl.stringUtf8('https://referrer.example.com')
-        ],
+        [Cl.stringUtf8('referrer'), Cl.stringUtf8('https://referrer.example.com')],
         referrer
       );
     });
@@ -297,7 +266,7 @@ describe('DevFunding Core Contract', () => {
           Cl.stringUtf8('Build a decentralized voting system'),
           Cl.stringUtf8('Must use Clarity and be production-ready'),
           duration,
-          Cl.none()
+          Cl.none(),
         ],
         creator
       );
@@ -305,26 +274,21 @@ describe('DevFunding Core Contract', () => {
       expect(result.result).toBeOk(Cl.uint(0)); // First grant ID
 
       // Verify grant was created
-      const grant = simnet.callReadOnlyFn(
-        'devfunding-core',
-        'get-grant',
-        [Cl.uint(0)],
-        creator
-      );
+      const grant = simnet.callReadOnlyFn('devfunding-core', 'get-grant', [Cl.uint(0)], creator);
 
       expect(grant.result).toBeSome(
         Cl.tuple({
-          'creator': Cl.principal(creator),
-          'amount': Cl.uint(9750000), // After 2.5% platform fee
-          'description': Cl.stringUtf8('Build a decentralized voting system'),
-          'requirements': Cl.stringUtf8('Must use Clarity and be production-ready'),
-          'deadline': expect.any(Object), // Will be set based on current time
+          creator: Cl.principal(creator),
+          amount: Cl.uint(9750000), // After 2.5% platform fee
+          description: Cl.stringUtf8('Build a decentralized voting system'),
+          requirements: Cl.stringUtf8('Must use Clarity and be production-ready'),
+          deadline: expect.any(Object), // Will be set based on current time
           'is-active': Cl.bool(true),
           'applicants-count': Cl.uint(0),
           'selected-dev': Cl.none(),
           'is-claimed': Cl.bool(false),
-          'referrer': Cl.none(),
-          'is-highlighted': Cl.bool(false)
+          referrer: Cl.none(),
+          'is-highlighted': Cl.bool(false),
         })
       );
     });
@@ -342,7 +306,7 @@ describe('DevFunding Core Contract', () => {
           Cl.stringUtf8('Grant with referral'),
           Cl.stringUtf8('Requirements here'),
           duration,
-          Cl.some(Cl.principal(referrer))
+          Cl.some(Cl.principal(referrer)),
         ],
         creator
       );
@@ -365,7 +329,7 @@ describe('DevFunding Core Contract', () => {
           Cl.stringUtf8('Test grant'),
           Cl.stringUtf8('Test requirements'),
           duration,
-          Cl.none()
+          Cl.none(),
         ],
         creator
       );
@@ -390,17 +354,12 @@ describe('DevFunding Core Contract', () => {
       expect(application.result).toBeSome(
         Cl.tuple({
           'applied-at': expect.any(Object),
-          'is-selected': Cl.bool(false)
+          'is-selected': Cl.bool(false),
         })
       );
 
       // Verify applicant count increased
-      const grant = simnet.callReadOnlyFn(
-        'devfunding-core',
-        'get-grant',
-        [Cl.uint(0)],
-        creator
-      );
+      const grant = simnet.callReadOnlyFn('devfunding-core', 'get-grant', [Cl.uint(0)], creator);
 
       const applicantsCount = Cl.tupleGet(grant.result!, 'applicants-count');
       expect(applicantsCount).toBeUint(1);
@@ -417,17 +376,12 @@ describe('DevFunding Core Contract', () => {
           Cl.stringUtf8('Test grant'),
           Cl.stringUtf8('Test requirements'),
           duration,
-          Cl.none()
+          Cl.none(),
         ],
         creator
       );
 
-      simnet.callPublicFn(
-        'devfunding-core',
-        'apply-for-grant',
-        [Cl.uint(0)],
-        applicant
-      );
+      simnet.callPublicFn('devfunding-core', 'apply-for-grant', [Cl.uint(0)], applicant);
 
       // Select developer
       const result = simnet.callPublicFn(
@@ -440,12 +394,7 @@ describe('DevFunding Core Contract', () => {
       expect(result.result).toBeOk(Cl.bool(true));
 
       // Verify selection
-      const grant = simnet.callReadOnlyFn(
-        'devfunding-core',
-        'get-grant',
-        [Cl.uint(0)],
-        creator
-      );
+      const grant = simnet.callReadOnlyFn('devfunding-core', 'get-grant', [Cl.uint(0)], creator);
 
       const selectedDev = Cl.tupleGet(grant.result!, 'selected-dev');
       expect(selectedDev).toBeSome(Cl.principal(applicant));
@@ -462,17 +411,12 @@ describe('DevFunding Core Contract', () => {
           Cl.stringUtf8('Test grant'),
           Cl.stringUtf8('Test requirements'),
           duration,
-          Cl.none()
+          Cl.none(),
         ],
         creator
       );
 
-      simnet.callPublicFn(
-        'devfunding-core',
-        'apply-for-grant',
-        [Cl.uint(0)],
-        applicant
-      );
+      simnet.callPublicFn('devfunding-core', 'apply-for-grant', [Cl.uint(0)], applicant);
 
       simnet.callPublicFn(
         'devfunding-core',
@@ -486,12 +430,7 @@ describe('DevFunding Core Contract', () => {
 
       // Claim grant
       const initialBalance = simnet.stxBalance(applicant);
-      const result = simnet.callPublicFn(
-        'devfunding-core',
-        'claim-grant',
-        [Cl.uint(0)],
-        applicant
-      );
+      const result = simnet.callPublicFn('devfunding-core', 'claim-grant', [Cl.uint(0)], applicant);
 
       expect(result.result).toBeOk(Cl.bool(true));
 
@@ -500,12 +439,7 @@ describe('DevFunding Core Contract', () => {
       expect(finalBalance).toBeGreaterThan(initialBalance);
 
       // Verify grant marked as claimed
-      const grant = simnet.callReadOnlyFn(
-        'devfunding-core',
-        'get-grant',
-        [Cl.uint(0)],
-        applicant
-      );
+      const grant = simnet.callReadOnlyFn('devfunding-core', 'get-grant', [Cl.uint(0)], applicant);
 
       const isClaimed = Cl.tupleGet(grant.result!, 'is-claimed');
       expect(isClaimed).toBeBool(true);
@@ -521,10 +455,7 @@ describe('DevFunding Core Contract', () => {
       simnet.callPublicFn(
         'devfunding-core',
         'create-dev-profile',
-        [
-          Cl.stringUtf8('premiumuser'),
-          Cl.stringUtf8('https://premium.example.com')
-        ],
+        [Cl.stringUtf8('premiumuser'), Cl.stringUtf8('https://premium.example.com')],
         user
       );
     });
@@ -556,12 +487,7 @@ describe('DevFunding Core Contract', () => {
     it('should create highlighted grant as premium user', () => {
       // Purchase premium first
       simnet.mintStx(1000000000, user);
-      simnet.callPublicFn(
-        'devfunding-core',
-        'purchase-premium',
-        [Cl.uint(1)],
-        user
-      );
+      simnet.callPublicFn('devfunding-core', 'purchase-premium', [Cl.uint(1)], user);
 
       // Create highlighted grant
       simnet.mintStx(100000000, user);
@@ -573,7 +499,7 @@ describe('DevFunding Core Contract', () => {
           Cl.stringUtf8('Highlighted grant'),
           Cl.stringUtf8('Premium requirements'),
           Cl.uint(30),
-          Cl.none()
+          Cl.none(),
         ],
         user
       );
@@ -581,12 +507,7 @@ describe('DevFunding Core Contract', () => {
       expect(result.result).toBeOk(Cl.uint(0));
 
       // Verify grant is highlighted
-      const grant = simnet.callReadOnlyFn(
-        'devfunding-core',
-        'get-grant',
-        [Cl.uint(0)],
-        user
-      );
+      const grant = simnet.callReadOnlyFn('devfunding-core', 'get-grant', [Cl.uint(0)], user);
 
       const isHighlighted = Cl.tupleGet(grant.result!, 'is-highlighted');
       expect(isHighlighted).toBeBool(true);
@@ -602,20 +523,14 @@ describe('DevFunding Core Contract', () => {
       simnet.callPublicFn(
         'devfunding-core',
         'create-dev-profile',
-        [
-          Cl.stringUtf8('proposer'),
-          Cl.stringUtf8('https://proposer.example.com')
-        ],
+        [Cl.stringUtf8('proposer'), Cl.stringUtf8('https://proposer.example.com')],
         proposer
       );
 
       simnet.callPublicFn(
         'devfunding-core',
         'create-dev-profile',
-        [
-          Cl.stringUtf8('voter'),
-          Cl.stringUtf8('https://voter.example.com')
-        ],
+        [Cl.stringUtf8('voter'), Cl.stringUtf8('https://voter.example.com')],
         voter
       );
     });
@@ -640,12 +555,12 @@ describe('DevFunding Core Contract', () => {
 
       expect(proposal.result).toBeSome(
         Cl.tuple({
-          'proposer': Cl.principal(proposer),
-          'description': Cl.stringUtf8('Add new feature X to the platform'),
+          proposer: Cl.principal(proposer),
+          description: Cl.stringUtf8('Add new feature X to the platform'),
           'yes-votes': Cl.uint(0),
           'no-votes': Cl.uint(0),
           'is-active': Cl.bool(true),
-          'created-at': expect.any(Object)
+          'created-at': expect.any(Object),
         })
       );
     });
@@ -707,7 +622,7 @@ describe('DevFunding Core Contract', () => {
           Cl.stringUtf8('Test grant'),
           Cl.stringUtf8('Requirements'),
           Cl.uint(30),
-          Cl.none()
+          Cl.none(),
         ],
         user
       );
@@ -726,7 +641,7 @@ describe('DevFunding Core Contract', () => {
           Cl.stringUtf8('Short grant'),
           Cl.stringUtf8('Requirements'),
           Cl.uint(1), // 1 day
-          Cl.none()
+          Cl.none(),
         ],
         user
       );
@@ -734,12 +649,7 @@ describe('DevFunding Core Contract', () => {
       // Mine enough blocks to pass deadline
       simnet.mineEmptyBlocks(200); // Assuming 1 block ≈ 10 minutes
 
-      const result = simnet.callPublicFn(
-        'devfunding-core',
-        'apply-for-grant',
-        [Cl.uint(0)],
-        user
-      );
+      const result = simnet.callPublicFn('devfunding-core', 'apply-for-grant', [Cl.uint(0)], user);
 
       expect(result.result).toBeErr(Cl.uint(108)); // ERR-DEADLINE-PASSED
     });

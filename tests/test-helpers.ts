@@ -29,12 +29,12 @@ export const TEST_DURATIONS = {
 // Initialize a test environment with all contracts deployed
 export async function setupTestEnvironment(): Promise<any> {
   const simnet = await initSimnet();
-  
+
   // Deploy all contracts
   simnet.deployContract('devfunding-core', './contracts/core.clar');
   simnet.deployContract('devfunding-token', './contracts/token.clar');
   simnet.deployContract('devfunding-escrow', './contracts/escrow.clar');
-  
+
   return simnet;
 }
 
@@ -50,10 +50,7 @@ export function createDevProfile(
   return simnet.callPublicFn(
     'devfunding-core',
     'create-dev-profile',
-    [
-      Cl.stringUtf8(githubHandle),
-      Cl.stringUtf8(portfolioUrl)
-    ],
+    [Cl.stringUtf8(githubHandle), Cl.stringUtf8(portfolioUrl)],
     developer
   );
 }
@@ -75,17 +72,11 @@ export function createGrant(
   if (balance < Cl.tupleGet(amount, 'value')) {
     simnet.mintStx(Cl.tupleGet(amount, 'value') * 2, creator);
   }
-  
+
   return simnet.callPublicFn(
     'devfunding-core',
     'create-grant',
-    [
-      amount,
-      Cl.stringUtf8(description),
-      Cl.stringUtf8(requirements),
-      durationDays,
-      referrer
-    ],
+    [amount, Cl.stringUtf8(description), Cl.stringUtf8(requirements), durationDays, referrer],
     creator
   );
 }
@@ -93,17 +84,8 @@ export function createGrant(
 /**
  * Apply for a grant
  */
-export function applyForGrant(
-  simnet: Simnet,
-  applicant: string,
-  grantId: number
-) {
-  return simnet.callPublicFn(
-    'devfunding-core',
-    'apply-for-grant',
-    [Cl.uint(grantId)],
-    applicant
-  );
+export function applyForGrant(simnet: Simnet, applicant: string, grantId: number) {
+  return simnet.callPublicFn('devfunding-core', 'apply-for-grant', [Cl.uint(grantId)], applicant);
 }
 
 /**
@@ -139,16 +121,11 @@ export function createEscrow(
   if (balance < Cl.tupleGet(amount, 'value')) {
     simnet.mintStx(Cl.tupleGet(amount, 'value') * 2, depositor);
   }
-  
+
   return simnet.callPublicFn(
     'devfunding-escrow',
     'create-escrow',
-    [
-      Cl.principal(beneficiary),
-      Cl.uint(contextId),
-      Cl.bool(isGrant),
-      amount
-    ],
+    [Cl.principal(beneficiary), Cl.uint(contextId), Cl.bool(isGrant), amount],
     depositor
   );
 }
@@ -156,11 +133,7 @@ export function createEscrow(
 /**
  * Mint DFT tokens for testing
  */
-export function mintDftTokens(
-  simnet: Simnet,
-  recipient: string,
-  amount: any = Cl.uint(1000000)
-) {
+export function mintDftTokens(simnet: Simnet, recipient: string, amount: any = Cl.uint(1000000)) {
   return simnet.mintFt('devfunding-token', Cl.tupleGet(amount, 'value'), recipient);
 }
 
@@ -187,24 +160,14 @@ export function getDevProfile(simnet: Simnet, developer: string) {
  * Get a grant from the contract
  */
 export function getGrant(simnet: Simnet, grantId: number, caller: string = WALLETS.DEPLOYER) {
-  return simnet.callReadOnlyFn(
-    'devfunding-core',
-    'get-grant',
-    [Cl.uint(grantId)],
-    caller
-  );
+  return simnet.callReadOnlyFn('devfunding-core', 'get-grant', [Cl.uint(grantId)], caller);
 }
 
 /**
  * Get an escrow from the contract
  */
 export function getEscrow(simnet: Simnet, escrowId: number, caller: string = WALLETS.DEPLOYER) {
-  return simnet.callReadOnlyFn(
-    'devfunding-escrow',
-    'get-escrow',
-    [Cl.uint(escrowId)],
-    caller
-  );
+  return simnet.callReadOnlyFn('devfunding-escrow', 'get-escrow', [Cl.uint(escrowId)], caller);
 }
 
 /**
@@ -258,7 +221,11 @@ export function extractSomeValue(result: any): any {
 /**
  * Calculate net amount after fees for testing
  */
-export function calculateNetAmount(amount: number, platformFeeBps: number = 250, referralFeeBps: number = 0): number {
+export function calculateNetAmount(
+  amount: number,
+  platformFeeBps: number = 250,
+  referralFeeBps: number = 0
+): number {
   const platformFee = Math.floor((amount * platformFeeBps) / 10000);
   const referralFee = Math.floor((amount * referralFeeBps) / 10000);
   return amount - platformFee - referralFee;

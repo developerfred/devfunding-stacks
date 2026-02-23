@@ -4,14 +4,14 @@
 ;;
 ;; PROBLEMAS ENCONTRADOS E CORRIGIDOS:
 ;;
-;; [E-01] release-escrow permitia que qualquer um (nao só o depositor
+;; [E-01] release-escrow permitia que qualquer um (nao so o depositor
 ;;        ou o beneficiary) liberasse fundos se fosse o CONTRACT-OWNER.
 ;;        Isso significa que o owner pode liberar fundos de QUALQUER
 ;;        escrow sem dispute. Separada funcao admin-release-escrow
 ;;        dedicada para casos de resolucao, com validacao de is-disputed.
 ;;
 ;; [E-02] refund-escrow verificava is-refunded com ERR-ESCROW-RELEASED
-;;        (código errado, semanticamente confuso). Criado ERR-ESCROW-REFUNDED.
+;;        (codigo errado, semanticamente confuso). Criado ERR-ESCROW-REFUNDED.
 ;;
 ;; [E-03] is-escrow-releasable nao verifica is-refunded  um escrow ja
 ;;        reembolsado seria marcado como "releasable". Corrigido.
@@ -30,7 +30,7 @@
 ;;        (ja e false por default no create, mas merge seguro).
 ;;
 ;; [E-08] resolve-dispute-for-beneficiary e resolve-dispute-for-depositor
-;;        eram duas funcoes separadas com código quase identico.
+;;        eram duas funcoes separadas com codigo quase identico.
 ;;        Consolidadas em resolve-escrow-dispute (admin-only) com
 ;;        parametro bool release-to-beneficiary.
 ;;
@@ -91,7 +91,7 @@
   }
 )
 
-;; indice: context-id + is-grant → escrow-id
+;; indice: context-id + is-grant -> escrow-id
 (define-map escrow-by-context
   { context-id: uint, is-grant: bool }
   { escrow-id: uint }
@@ -193,7 +193,7 @@
   )
 )
 
-;; Reembolso: depositor pode recuperar após o lock period expirar
+;; Reembolso: depositor pode recuperar apos o lock period expirar
 (define-public (refund-escrow (escrow-id uint))
   (let (
     (escrow  (unwrap! (map-get? escrows { escrow-id: escrow-id }) ERR-NOT-FOUND))

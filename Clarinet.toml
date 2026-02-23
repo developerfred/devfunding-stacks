@@ -5,6 +5,9 @@ authors = []
 telemetry = true
 cache_dir = "./.cache"
 
+[[project.requirements]]
+contract_id = "SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard"
+
 # [contracts.counter]
 # path = "contracts/counter.clar"
 # epoch = "latest"
@@ -25,8 +28,11 @@ check_checker = { trusted_sender = false, trusted_caller = false, callee_filter 
 [contracts.core]
 path = "contracts/core.clar"
 
+
 [contracts.token]
+
 path = "contracts/token.clar"
 
 [contracts.escrow]
+
 path = "contracts/escrow.clar"
