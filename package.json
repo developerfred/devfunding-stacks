@@ -18,7 +18,20 @@
     "lint:fix": "eslint . --ext .ts --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "pre-commit": "npm run lint && npm run format:check"
+    "pre-commit": "npm run lint && npm run format:check",
+    "deploy": "npx tsx scripts/deploy.ts",
+    "deploy:mainnet": "STACKS_NETWORK=mainnet npx tsx scripts/deploy.ts",
+    "deploy:simnet": "STACKS_NETWORK=simnet npx tsx scripts/deploy.ts",
+    "verify": "npx tsx scripts/verify-deployment.ts",
+    "verify:core": "npx tsx scripts/verify-deployment.ts core",
+    "verify:token": "npx tsx scripts/verify-deployment.ts token",
+    "verify:escrow": "npx tsx scripts/verify-deployment.ts escrow",
+    "interact": "npx tsx scripts/interact-examples.ts",
+    "interact:profile": "npx tsx scripts/interact-examples.ts profile",
+    "interact:grant": "npx tsx scripts/interact-examples.ts grant",
+    "interact:bounty": "npx tsx scripts/interact-examples.ts bounty",
+    "interact:mint": "npx tsx scripts/interact-examples.ts mint",
+    "generate-abi": "npx tsx scripts/generate-abi.ts"
   },
   "author": "",
   "license": "ISC",
@@ -31,9 +44,12 @@
   },
   "dependencies": {
     "@stacks/clarinet-sdk": "^3.14.0",
+    "@stacks/clarity-sdk": "^2.0.0",
     "@stacks/transactions": "^7.2.0",
     "@types/node": "^24.4.0",
     "chokidar-cli": "^3.0.0",
+    "dotenv": "^16.0.0",
+    "tsx": "^4.0.0",
     "vitest": "^3.0.0",
     "vitest-environment-clarinet": "^3.0.2"
   }
