@@ -1,0 +1,39 @@
+# DevFunding Vulnerability Disclosure
+Contact: security@devfunding.xyz
+Encryption: https://devfunding.xyz/security.pgp
+Policy: https://github.com/developerfred/devfunding-stacks/SECURITY.md
+Acknowledgments: https://github.com/developerfred/devfunding-stacks/security/advisories
+Expires: 2027-02-23T09:50:00.000Z
+
+## Security Considerations for Developers
+
+### Integration Security
+When integrating with DevFunding contracts:
+1. **Verify Contract Addresses**: Always verify contract addresses before interacting
+2. **Check Audit Status**: Review latest audit reports before integration
+3. **Validate User Input**: All user input should be validated client-side
+4. **Handle Errors Gracefully**: Implement comprehensive error handling
+5. **Monitor Transactions**: Track transaction status and handle failures
+
+### Wallet Security
+1. **Never Store Private Keys**: Use wallet providers or secure key management
+2. **Implement Timeouts**: Automatic logout after inactivity
+3. **Session Management**: Secure session handling for authenticated operations
+4. **Backup Recovery**: Secure backup and recovery mechanisms
+
+### Frontend Security
+1. **XSS Prevention**: Sanitize all user input
+2. **CSRF Protection**: Implement anti-CSRF tokens
+3. **Content Security Policy**: Use CSP headers
+4. **Secure Headers**: Implement security headers (HSTS, X-Frame-Options)
+
+### Testing Requirements
+1. **Security Testing**: Include security tests in CI/CD
+2. **Penetration Testing**: Regular penetration tests
+3. **Code Review**: Security-focused code reviews
+4. **Dependency Scanning**: Regular vulnerability scanning
+Contact: security@devfunding.xyz
+Encryption: https://devfunding.xyz/security.pgp
+Policy: https://github.com/developerfred/devfunding-stacks/SECURITY.md
+Acknowledgments: https://github.com/developerfred/devfunding-stacks/security/advisories
+Expires: 2027-02-23T09:50:00.000Z
